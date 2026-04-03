@@ -1,0 +1,5 @@
+{
+  "name": "Smart SOP Assistant",
+  "description": "A powerful tool to generate and manage Standard Operating Procedures using Gemini AI.",
+  "requestFramePermissions": []
+}
