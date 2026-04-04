@@ -3,7 +3,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -13,9 +12,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const SOPS_FILE = path.join(__dirname, 'sops.json');
-
-// Initialize Gemini AI client using the key from .env
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Initializes the sops.json file if it doesn't exist.
@@ -39,25 +35,34 @@ async function startServer() {
   app.use(express.json());
 
   /**
-   * API Route: Generate an SOP using Gemini AI.
-   * The frontend sends a task, the backend calls Gemini and returns the result.
-   * This keeps the API key secure on the server side.
+   * API Route: Generate an SOP using OpenRouter + Gemini model.
+   * The frontend sends a task, the backend calls the AI and returns the result.
+   * The API key is stored securely in .env, never exposed to the browser.
    */
   app.post('/api/generate', async (req, res) => {
     try {
       const { task } = req.body;
-      if (!task) {
-        return res.status(400).json({ error: 'Task is required' });
-      }
+      if (!task) return res.status(400).json({ error: 'Task is required' });
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
-        contents: `Create a professional, step-by-step Standard Operating Procedure (SOP) for the following task: "${task}". Include a Title, Purpose, Scope, and detailed Steps. Use markdown headers (#, ##) and bullet points.`,
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.0-flash-lite-001',
+          messages: [{
+            role: 'user',
+            content: `Create a professional, step-by-step Standard Operating Procedure (SOP) for the following task: "${task}". Include a Title, Purpose, Scope, and detailed Steps. Use markdown headers (#, ##) and bullet points.`
+          }]
+        })
       });
 
-      res.json({ text: response.text });
+      const data = await response.json();
+      res.json({ text: data.choices[0].message.content });
     } catch (error) {
-      console.error('Gemini error:', error);
+      console.error('OpenRouter error:', error);
       res.status(500).json({ error: 'Failed to generate SOP' });
     }
   });
