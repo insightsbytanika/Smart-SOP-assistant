@@ -21,6 +21,7 @@ const modalTitle = document.getElementById('modalTitle');
 const modalContent = document.getElementById('modalContent');
 const closeModal = document.getElementById('closeModal');
 const deleteSopBtn = document.getElementById('deleteSopBtn');
+const copyBtn = document.getElementById('copyBtn');
 
 let currentGeneratedSop = null;
 let activeSopId = null;
@@ -303,6 +304,19 @@ saveChangesBtn.onclick = saveChanges;
 cancelEditBtn.onclick = exitEditMode;
 closeModal.onclick = closeSopModal;
 deleteSopBtn.onclick = deleteSOP;
+
+// Copy the generated SOP text to clipboard
+copyBtn.onclick = () => {
+    const text = sopResult.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = 'Copied! ✓';
+        copyBtn.classList.add('bg-emerald-200');
+        setTimeout(() => {
+            copyBtn.textContent = 'Copy to Clipboard';
+            copyBtn.classList.remove('bg-emerald-200');
+        }, 2000);
+    });
+};
 
 sopModal.onclick = (e) => {
     if (e.target === sopModal) closeSopModal();
