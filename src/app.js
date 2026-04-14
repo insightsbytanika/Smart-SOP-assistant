@@ -22,7 +22,7 @@ const modalContent = document.getElementById('modalContent');
 const closeModal = document.getElementById('closeModal');
 const deleteSopBtn = document.getElementById('deleteSopBtn');
 const copyBtn = document.getElementById('copyBtn');
-
+const templateSelect = document.getElementById('templateSelect');
 let currentGeneratedSop = null;
 let activeSopId = null;
 let isEditing = false;
@@ -306,6 +306,13 @@ closeModal.onclick = closeSopModal;
 deleteSopBtn.onclick = deleteSOP;
 
 // Copy the generated SOP text to clipboard
+
+templateSelect.onchange = () => {
+    if (templateSelect.value) {
+        taskInput.value = templateSelect.value;
+        templateSelect.value = '';
+    }
+};
 copyBtn.onclick = () => {
     const text = sopResult.innerText;
     navigator.clipboard.writeText(text).then(() => {
